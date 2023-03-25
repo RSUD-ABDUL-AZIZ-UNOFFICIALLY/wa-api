@@ -175,8 +175,19 @@ async function seedmsg(number, message) {
     return { status: false, message: "User not registered"};
   }
 }
+async function getPic(telp){
+  let noHp = phoneNumberFormatter(telp);
+  const isRegistered = await client.isRegisteredUser(noHp);
+  if (isRegistered) {
+    const profilePic = await client.getProfilePicUrl(noHp);
+    return { status: true, message: "Profile pic found", data: {profilePic}};
+  } else {
+    return { status: false, message: "User not registered"};
+  }
+}
 module.exports = {
   seedmsg,
+  getPic
 };
 
 
