@@ -6,6 +6,9 @@ const app = express();
 app.use(express.json());
 app.use(morgan('dev'));
 
+app.enable('trust proxy');
+app.use("/api/wa/image", express.static("public/img"));
+
 const routes = require('./routes');
 app.use('/api', routes);
 
