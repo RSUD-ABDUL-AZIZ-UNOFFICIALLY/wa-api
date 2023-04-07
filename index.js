@@ -3,8 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const app = express();
+var cors = require('cors')
 app.use(express.json());
 app.use(morgan('dev'));
+app.use(cors())
 
 app.enable('trust proxy');
 app.use("/api/wa/image", express.static("public/img"));
