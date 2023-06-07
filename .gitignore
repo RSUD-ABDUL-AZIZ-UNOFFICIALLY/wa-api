@@ -2,6 +2,7 @@
 # Temporary folder
 #-------------------------
 /.wwebjs_auth
+/.wwebjs_cache
 /node_modules
 /downloaded-media/*
 !/downloaded-media/file.txt
