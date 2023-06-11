@@ -58,6 +58,18 @@ client.on("change_state", (state) => {
   console.log("CHANGE STATE", state);
 });
 
+client.on('message',async (msg) => {
+  // if (msg.body == '!ping') {
+  //     msg.reply('pong');
+  // }
+  try {
+    client.sendPresenceAvailable();
+    // client.sendMessage(msg.from, 'pong');
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 // client.on("message", async (msg) => {
 //   console.log("------------------------------------------------------");
 //   console.log("Msg: " + msg.body);
@@ -165,6 +177,7 @@ async function seedmsg(number, message) {
   if (isRegistered) {
     console.log("WHATSAPP WEB => User registered");
     try {
+      client.sendPresenceAvailable();
       await client.sendMessage(noHp, message);
     } catch (error) {
       return { status: false, message: "Message failed to send", error: error};
