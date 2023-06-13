@@ -65,12 +65,12 @@ client.on('message',async (msg) => {
   // }
   try {
     if(x == 0){
-   let on = client.sendPresenceAvailable();
+   let on = await client.sendPresenceAvailable();
    console.log("Chat ON " +on);
    x =1;
     } else
     {
-      let off = client.sendPresenceUnavailable();
+      let off = await client.sendPresenceUnavailable();
       console.log("Chat OFF " +off);
       x = 0;
     }
@@ -179,7 +179,7 @@ const checkRegisteredNumber = async function (number) {
 };
 
 async function seedmsg(number, message) {
-  let on = client.sendPresenceAvailable();
+  let on = await client.sendPresenceAvailable();
    console.log("ON " +on);
   let noHp = phoneNumberFormatter(number);
   console.log("WHATSAPP WEB => Number: " + noHp);
@@ -193,7 +193,7 @@ async function seedmsg(number, message) {
     } catch (error) {
       return { status: false, message: "Message failed to send", error: error};
     }
-  let off = client.sendPresenceUnavailable();
+  let off = await client.sendPresenceUnavailable();
   console.log("OFF " + off);
     return { status: true, message: "Message sent successfully"};
   } else {
