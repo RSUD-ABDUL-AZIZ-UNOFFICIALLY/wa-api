@@ -3,6 +3,7 @@ const { phoneNumberFormatter } = require('../helpers/formatter');
 const qrcode = require("qrcode-terminal");
 const fs = require("fs");
 const mime = require("mime-types");
+const e = require("cors");
 console.log("Connection to Whatsapp Web Client");
 
 const client = new Client({
@@ -57,13 +58,22 @@ client.on("disconnected", (reason) => {
 client.on("change_state", (state) => {
   console.log("CHANGE STATE", state);
 });
-
+let x = 0;
 client.on('message',async (msg) => {
   // if (msg.body == '!ping') {
   //     msg.reply('pong');
   // }
   try {
-    client.sendPresenceAvailable();
+    if(x == 0){
+   let on = client.sendPresenceAvailable();
+   console.log("Chat ON " +on);
+   x =1;
+    } else
+    {
+      let off = client.sendPresenceUnavailable();
+      console.log("Chat OFF " +off);
+      x = 0;
+    }
     // client.sendMessage(msg.from, 'pong');
   } catch (error) {
     console.log(error);
@@ -169,6 +179,8 @@ const checkRegisteredNumber = async function (number) {
 };
 
 async function seedmsg(number, message) {
+  let on = client.sendPresenceAvailable();
+   console.log("ON " +on);
   let noHp = phoneNumberFormatter(number);
   console.log("WHATSAPP WEB => Number: " + noHp);
   const isRegistered = await client.isRegisteredUser(noHp);
@@ -177,16 +189,18 @@ async function seedmsg(number, message) {
   if (isRegistered) {
     console.log("WHATSAPP WEB => User registered");
     try {
-      client.sendPresenceAvailable();
       await client.sendMessage(noHp, message);
     } catch (error) {
       return { status: false, message: "Message failed to send", error: error};
     }
+  let off = client.sendPresenceUnavailable();
+  console.log("OFF " + off);
     return { status: true, message: "Message sent successfully"};
   } else {
     console.log("WHATSAPP WEB => User not registered");
     return { status: false, message: "User not registered"};
   }
+  
 }
 async function getPic(telp){
   let noHp = phoneNumberFormatter(telp);
