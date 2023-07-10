@@ -104,7 +104,7 @@ console.log("get Contak : " + getContact + " sub : " + subfile);
         if (media) {
             // The folder to store: change as you want!
             // Create if not exists
-            const mediaPath = '../downloaded-media/' + subfile + '/';
+            const mediaPath = './downloaded-media/' + subfile + '/';
             if (!fs.existsSync(mediaPath)) {
                 fs.mkdirSync(mediaPath);
             }
