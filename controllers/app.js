@@ -65,6 +65,68 @@ client.on('message',async (msg) => {
   //     msg.reply('pong');
   // }
   console.log("MESSAGE RECEIVED");
+  const getChats = await client.getChatById(msg.from).then(data => {
+    // console.log(data);
+    console.log("getChats: " + data.name);
+    // console.log("grub satus: " + data.isGroup);
+    return data;
+}).catch(err => {
+    console.log(err);
+});
+
+if (getChats.isGroup == true) {
+    console.log("Grub");
+    var subfile = getChats.name;
+    var getContact = await client.getContactById(msg.author).then(contacts => {
+        // console.log(contacts);
+        console.log("name: " + contacts.pushname);
+        return contacts.pushname;
+    }).catch(err => {
+        // console.log(err);
+    });
+} else if (getChats.id.server == 'broadcast') {
+    var subfile = "BroadcastChannel";
+    var getContact = msg._data.notifyName;
+} else if (getChats.isGroup == false) {
+    console.log("Private");
+    var subfile = getChats.name;
+    var getContact = await client.getContactById(msg.from).then(contacts => {
+        // console.log(contacts);
+        console.log("name: " + contacts.pushname);
+        return contacts.pushname;
+    }).catch(err => {
+        // console.log(err);
+    });
+}
+console.log("get Contak : " + getContact + " sub : " + subfile);
+  if (msg.hasMedia) {
+    msg.downloadMedia().then(media => {
+        if (media) {
+            // The folder to store: change as you want!
+            // Create if not exists
+            const mediaPath = '../downloaded-media/' + subfile + '/';
+            if (!fs.existsSync(mediaPath)) {
+                fs.mkdirSync(mediaPath);
+            }
+            // Get the file extension by mime-type
+            const extension = mime.extension(media.mimetype);
+            // Filename: change as you want! 
+            // I will use the time for this example
+            // Why not use media.filename? Because the value is not certain exists
+            const timeStamp = new Date().getTime();
+            const fullFilename = mediaPath + getContact + timeStamp + '.' + extension;
+            // Save to file
+            try {
+                fs.writeFileSync(fullFilename, media.data, { encoding: 'base64' });
+                console.log('File downloaded successfully!', fullFilename);
+            } catch (err) {
+                console.log('Failed to save the file:', err);
+            }
+        }
+    }).catch(err => {
+        console.log(err);
+    });
+}
 });
 
 
