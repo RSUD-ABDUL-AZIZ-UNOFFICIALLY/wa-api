@@ -1,10 +1,23 @@
-const { seedmsg, getPic } = require("./app.js");
+const { seedmsg,sendGrubMsg, getPic } = require("./app.js");
 
 module.exports = {
   send: async (req, res, next) => {
     try {
       const { telp, message } = req.body;
       let kirim = await seedmsg(telp, message);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  sendGrub: async (req, res, next) => {
+    try {
+      const { telp, message } = req.body;
+      let kirim = await sendGrubMsg(telp, message);
       console.log(kirim);
       if (kirim.status == true) {
         return res.status(200).json(kirim);

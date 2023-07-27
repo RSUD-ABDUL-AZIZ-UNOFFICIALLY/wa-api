@@ -68,13 +68,10 @@ client.on('message',async (msg) => {
 });
 
 
-const findGroupByName = async function (name) {
-  const group = await client.getChats().then((chats) => {
-    return chats.find(
-      (chat) => chat.isGroup && chat.name.toLowerCase() == name.toLowerCase()
-    );
-  });
-  return group;
+const findGroupByName = async function (groupName) {
+  const chats = await client.getChats()
+  const groups = chats.filter(chat => chat.isGroup && chat.name == groupName)
+  return groups[0];
 };
 
 
@@ -103,6 +100,27 @@ async function seedmsg(number, message) {
   }
   
 }
+
+async function sendGrubMsg(name, message) {
+  await client.sendPresenceAvailable();
+  console.log("WHATSAPP WEB => Group name: " + name);
+  const group = await findGroupByName(name);
+  if (group) {
+    console.log("WHATSAPP WEB => Group found");
+    try {
+      await client.sendMessage(group.id._serialized, message);
+    } catch (error) {
+      return { status: false, message: "Message failed to send", error: error};
+    }
+    return { status: true, message: "Message sent successfully"};
+  } else {
+    console.log("WHATSAPP WEB => Group not found");
+    return { status: false, message: "Group not found"};
+  }
+}
+
+
+
 async function getPic(telp){
   let noHp = phoneNumberFormatter(telp);
   const isRegistered = await client.isRegisteredUser(noHp);
@@ -115,6 +133,7 @@ async function getPic(telp){
 }
 module.exports = {
   seedmsg,
+  sendGrubMsg,
   getPic
 };
 
