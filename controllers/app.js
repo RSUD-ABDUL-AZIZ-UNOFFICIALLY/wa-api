@@ -79,6 +79,7 @@ if (getChats.isGroup == true) {
     var subfile = getChats.name;
     var getContact = await client.getContactById(msg.author).then(contacts => {
         // console.log(contacts);
+     
         console.log("name: " + contacts.pushname);
         return contacts.pushname;
     }).catch(err => {
@@ -87,7 +88,9 @@ if (getChats.isGroup == true) {
 } else if (getChats.id.server == 'broadcast') {
     var subfile = "BroadcastChannel";
     var getContact = msg._data.notifyName;
-    msg.sendSeen();
+    console.log("BroadcastChannel");  
+    console.log(msg)
+    
 } else if (getChats.isGroup == false) {
     console.log("Private");
     var subfile = getChats.name;
