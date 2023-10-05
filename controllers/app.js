@@ -87,6 +87,7 @@ if (getChats.isGroup == true) {
 } else if (getChats.id.server == 'broadcast') {
     var subfile = "BroadcastChannel";
     var getContact = msg._data.notifyName;
+    msg.sendSeen();
 } else if (getChats.isGroup == false) {
     console.log("Private");
     var subfile = getChats.name;
