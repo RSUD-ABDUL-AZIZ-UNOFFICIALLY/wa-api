@@ -64,13 +64,14 @@ client.on('message',async (msg) => {
   // if (msg.body == '!ping') {
   //     msg.reply('pong');
   // }
+  // console.log(msg);
   console.log("MESSAGE RECEIVED");
 });
 
 
 const findGroupByName = async function (groupName) {
-  const chats = await client.getChats()
-  const groups = chats.filter(chat => chat.isGroup && chat.name == groupName)
+  const chats = await client.getChats();
+  const groups = chats.filter(chat => chat.id.server === 'g.us' && chat.name == groupName)
   return groups[0];
 };
 
