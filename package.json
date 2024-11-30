@@ -1,7 +1,7 @@
 {
   "name": "wa-api",
-  "version": "1.2.6",
-  "description": "",
+  "version": "1.3.0",
+  "description": "bisa kirim pdf atau meida ke wa",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
