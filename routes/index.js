@@ -7,6 +7,7 @@ const middleware = require('../middlewares');
 
 routes.post('/wa/send',middleware.check, wa.send);
 routes.post('/wa/sendgrub',middleware.check, wa.sendGrub);
+routes.post('/wa/postmedia', middleware.check, wa.postMedia);
 routes.get('/wa/getprofilepic',middleware.check, wa.getProfilePic);
 
 module.exports = routes;

@@ -1,4 +1,4 @@
-const { seedmsg,sendGrubMsg, getPic } = require("./app.js");
+const { seedmsg, sendGrubMsg, sendMedia, getPic } = require("./app.js");
 
 module.exports = {
   send: async (req, res, next) => {
@@ -43,6 +43,19 @@ module.exports = {
             }
           });
         }
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  postMedia: async (req, res, next) => {
+    try {
+      const { pdfUrl, to, stt, fileName } = req.body;
+      let kirim = await sendMedia(pdfUrl, to, stt, fileName);
+      console.log(kirim);
+      if (kirim.status == true) {
         return res.status(200).json(kirim);
       }
       return res.status(400).json(kirim);

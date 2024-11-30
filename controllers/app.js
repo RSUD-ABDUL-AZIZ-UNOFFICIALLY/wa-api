@@ -1,6 +1,7 @@
 const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 const { phoneNumberFormatter } = require('../helpers/formatter');
 const qrcode = require("qrcode-terminal");
+const axios = require('axios');
 const fs = require("fs");
 const mime = require("mime-types");
 const e = require("cors");
@@ -119,6 +120,46 @@ async function sendGrubMsg(name, message) {
     return { status: false, message: "Group not found"};
   }
 }
+async function sendMedia(pdfUrl, to, stt, fileName) {
+  // Unduh file PDF
+  let response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
+  // let contentType = mime.contentType(fileName);
+  let contentType = response.headers['content-type'];
+  let media = new MessageMedia(contentType, Buffer.from(response.data).toString('base64'), fileName + "." + contentType.split("/")[1]);
+  if (stt == 'group') {
+    const group = await findGroupByName(to);
+    if (group) {
+      await client.sendMessage(group.id._serialized, media);
+      console.log('PDF dikirim ke:', group.id._serialized);
+      return { status: true, message: "Message sent successfully" };
+    } else {
+      console.log("WHATSAPP WEB => Group not found");
+      return { status: false, message: "Group not found" };
+    }
+  }
+  if (stt == 'personal') {
+    let on = await client.sendPresenceAvailable();
+    console.log("ON " + on);
+    let noHp = phoneNumberFormatter(to);
+    console.log("WHATSAPP WEB => Number: " + noHp);
+    const isRegistered = await client.isRegisteredUser(noHp);
+    if (isRegistered) {
+      console.log("WHATSAPP WEB => User registered");
+      try {
+        await client.sendMessage(noHp, media);
+      } catch (error) {
+        return { status: false, message: "Message failed to send", error: error };
+      }
+      let off = await client.sendPresenceUnavailable();
+      console.log("OFF " + off);
+      return { status: true, message: "Message sent successfully" };
+    } else {
+      console.log("WHATSAPP WEB => User not registered");
+      return { status: false, message: "User not registered" };
+    }
+  }
+}
+
 
 
 
@@ -135,6 +176,7 @@ async function getPic(telp){
 module.exports = {
   seedmsg,
   sendGrubMsg,
+  sendMedia,
   getPic
 };
 
