@@ -88,6 +88,10 @@ async function seedmsg(number, message) {
   console.log("WHATSAPP WEB => Message: " + message);
   if (isRegistered) {
     console.log("WHATSAPP WEB => User registered");
+    let chat = await client.getChatById(noHp);
+    chat.sendSeen();
+    await chat.sendStateTyping();
+    await new Promise(resolve => setTimeout(resolve, 2000));
     try {
       await client.sendMessage(noHp, message);
     } catch (error) {
