@@ -1,10 +1,10 @@
 const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
-const { phoneNumberFormatter } = require('../helpers/formatter');
+const { phoneNumberFormatter, phoneNumberNormalizer } = require('../helpers/formatter');
 const qrcode = require("qrcode-terminal");
 const axios = require('axios');
 const fs = require("fs");
 const mime = require("mime-types");
-const e = require("cors");
+require('dotenv').config();
 console.log("Connection to Whatsapp Web Client");
 
 const client = new Client({
@@ -65,7 +65,20 @@ client.on('message',async (msg) => {
   // if (msg.body == '!ping') {
   //     msg.reply('pong');
   // }
-  // console.log(msg);
+  let seeder = msg.id.remote.split('@')[1];
+  if (seeder == 'c.us') {
+    let noHp = phoneNumberNormalizer(msg.from);
+    console.log("WHATSAPP WEB => Number: " + noHp);
+    // let kirim = await seedmsg(noHp, msg.body);
+    // console.log(kirim);
+    try {
+      axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: noHp, message: msg.body })
+    } catch (error) {
+
+    }
+
+  }
+  console.log(msg.id.remote);
   console.log("MESSAGE RECEIVED");
 });
 
