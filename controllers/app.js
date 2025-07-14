@@ -108,7 +108,7 @@ async function seedmsg(number, message) {
     try {
       await client.sendMessage(noHp, message);
     } catch (error) {
-      return { status: false, message: "Messrage failed to send", error: error };
+      // return { status: false, message: "Messrage failed to send", error: error };
     }
   let off = await client.sendPresenceUnavailable();
   console.log("OFF " + off);
