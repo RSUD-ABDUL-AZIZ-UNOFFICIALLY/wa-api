@@ -1,4 +1,4 @@
-const { seedmsg, sendGrubMsg, sendMedia, getPic } = require("./app.js");
+const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout } = require("./app.js");
 
 module.exports = {
   send: async (req, res, next) => {
@@ -6,10 +6,7 @@ module.exports = {
       const { telp, message } = req.body;
       let kirim = await seedmsg(telp, message);
       console.log(kirim);
-      if (kirim.status == true) {
-        return res.status(200).json(kirim);
-      }
-      return res.status(400).json(kirim);
+      return res.status(200).json(kirim);
     } catch (error) {
       return next(error);
     }
@@ -54,6 +51,24 @@ module.exports = {
     try {
       const { pdfUrl, to, stt, fileName } = req.body;
       let kirim = await sendMedia(pdfUrl, to, stt, fileName);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  cekCotak: async (req, res, next) => {
+    let { telp } = req.body;
+    let kirim = await cekCotak(telp);
+    console.log(kirim);
+    return res.status(200).json(kirim);
+  },
+  logout: async (req, res, next) => {
+    try {
+      let kirim = await logout();
       console.log(kirim);
       if (kirim.status == true) {
         return res.status(200).json(kirim);

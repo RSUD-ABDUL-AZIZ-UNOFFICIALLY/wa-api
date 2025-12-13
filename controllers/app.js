@@ -5,13 +5,11 @@ const axios = require('axios');
 const fs = require("fs");
 const mime = require("mime-types");
 require('dotenv').config();
-console.log("Connection to Whatsapp Web Client");
+
 
 const client = new Client({
   // authStrategy: new NoAuth({
-  authStrategy: new LocalAuth({
-    // clientId: "client-two",
-    // dataPath: "./data",
+  authStrategy: new LocalAuth({}),
     restartOnAuthFail: false,
     puppeteer: {
       headless: true,
@@ -25,11 +23,11 @@ const client = new Client({
         "--single-process", // <- this one doesn't works in Windows
         "--disable-gpu",
       ],
-    },
-  }),
+  },
 });
 
 client.initialize();
+console.log("Connection to Whatsapp Web Client");
 
 client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true }, function (qrcode) {
@@ -38,6 +36,7 @@ client.on("qr", (qr) => {
 });
 
 client.on("authenticated", async (session) => {
+  console.log("AUTHENTICATED", session);
   console.log("WHATSAPP WEB => Authenticated");
 });
 
@@ -48,6 +47,8 @@ client.on("auth_failure", (msg) => {
 
 client.on("ready", async () => {
   console.log("WHATSAPP WEB => Ready");
+  let online = await client.sendPresenceAvailable();
+  console.log("ONLINE ");
 });
 
 client.on("disconnected", (reason) => {
@@ -65,6 +66,8 @@ client.on('message',async (msg) => {
   // if (msg.body == '!ping') {
   //     msg.reply('pong');
   // }
+  console.log("WHATSAPP WEB => Message received");
+  console.log(msg.id.remote);
   let seeder = msg.id.remote.split('@')[1];
   if (seeder == 'c.us') {
     let noHp = phoneNumberNormalizer(msg.from);
@@ -78,8 +81,32 @@ client.on('message',async (msg) => {
     }
 
   }
-  console.log(msg.id.remote);
-  console.log("MESSAGE RECEIVED");
+  const chat = await msg.getChat();
+  // Ambil 20 pesan terakhir sebelum pesan ini
+  const messages = await chat.fetchMessages({ limit: 3 });
+
+  messages.forEach(m => {
+    console.log({
+      from: m.from,
+      body: m.body,
+      timestamp: m.timestamp
+    });
+  });
+  if (seeder == 'lid') {
+    let on = await client.sendPresenceAvailable();
+    await chat.sendStateTyping();
+    console.log("PRIVATE RECEIVED");
+    await client.sendMessage(msg.from, "Under Maintenance");
+    console.log(chat);
+
+    try {
+      // axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body })
+    } catch (error) {
+
+    }
+  }
+  console.log(msg);
+
 });
 
 
@@ -94,6 +121,11 @@ const findGroupByName = async function (groupName) {
 async function seedmsg(number, message) {
   let on = await client.sendPresenceAvailable();
    console.log("ON " +on);
+  console.log("WHATSAPP WEB => Number: " + number);
+  if (number.includes("@")) {
+    await client.sendMessage(number, message);
+    return
+  }
   let noHp = phoneNumberFormatter(number);
   console.log("WHATSAPP WEB => Number: " + noHp);
   const isRegistered = await client.isRegisteredUser(noHp);
@@ -156,7 +188,6 @@ async function sendMedia(pdfUrl, to, stt, fileName) {
   }
   if (stt == 'personal') {
     let on = await client.sendPresenceAvailable();
-    console.log("ON " + on);
     let noHp = phoneNumberFormatter(to);
     console.log("WHATSAPP WEB => Number: " + noHp);
     const isRegistered = await client.isRegisteredUser(noHp);
@@ -190,11 +221,48 @@ async function getPic(telp){
     return { status: false, message: "User not registered"};
   }
 }
+
+async function cekCotak(nomor) {
+  try {
+    await client.sendPresenceAvailable();
+    if (nomor.includes('@')) {
+      // const chats = await client.getChats();
+      const isRegistered = await client.getChatById(nomor);
+      // let isRegistered = await client.isRegisteredUser(nomor);
+      return isRegistered
+      return
+    } else {
+      let noHp = phoneNumberFormatter(nomor);
+      const isRegistered = await client.getChats();
+      return isRegistered
+    }
+  } catch (error) {
+    console.log(error);
+    return false
+
+  }
+
+
+}
+async function logout() {
+  let on = await client.sendPresenceAvailable();
+  console.log("ON " + on);
+  let off = await client.sendPresenceUnavailable();
+  // await client.logout();
+  console.log("OFF " + off);
+  let state = await client.getState();
+  console.log(state);
+
+  // client.initialize();
+  return { status: true, message: "Logout successfully" };
+}
 module.exports = {
   seedmsg,
   sendGrubMsg,
   sendMedia,
-  getPic
+  getPic,
+  cekCotak,
+  logout
 };
 
 
