@@ -9,7 +9,9 @@ require('dotenv').config();
 
 const client = new Client({
   // authStrategy: new NoAuth({
-  authStrategy: new LocalAuth({}),
+  authStrategy: new LocalAuth({
+    clientId: 1
+  }),
     restartOnAuthFail: false,
     puppeteer: {
       headless: true,
@@ -96,11 +98,10 @@ client.on('message',async (msg) => {
     let on = await client.sendPresenceAvailable();
     await chat.sendStateTyping();
     console.log("PRIVATE RECEIVED");
-    await client.sendMessage(msg.from, "Under Maintenance");
     console.log(chat);
 
     try {
-      // axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body })
+      axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body })
     } catch (error) {
 
     }
@@ -226,15 +227,19 @@ async function cekCotak(nomor) {
   try {
     await client.sendPresenceAvailable();
     if (nomor.includes('@')) {
-      // const chats = await client.getChats();
-      const isRegistered = await client.getChatById(nomor);
+      let isRegistered = await client.getChatById(nomor);
       // let isRegistered = await client.isRegisteredUser(nomor);
       return isRegistered
       return
     } else {
       let noHp = phoneNumberFormatter(nomor);
-      const isRegistered = await client.getChats();
-      return isRegistered
+      const isRegistered = await client.isRegisteredUser(noHp);
+      if (!isRegistered) {
+        return { id: { _serialized: noHp, isRegistered: false } }
+      }
+      let data = await client.getChatById(noHp);
+      data.id.isRegistered = true
+      return data
     }
   } catch (error) {
     console.log(error);
@@ -252,8 +257,7 @@ async function logout() {
   console.log("OFF " + off);
   let state = await client.getState();
   console.log(state);
-
-  // client.initialize();
+  client.initialize();
   return { status: true, message: "Logout successfully" };
 }
 module.exports = {
