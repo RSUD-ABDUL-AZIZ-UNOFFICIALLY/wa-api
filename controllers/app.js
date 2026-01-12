@@ -5,6 +5,7 @@ const axios = require('axios');
 const fs = require("fs");
 const mime = require("mime-types");
 require('dotenv').config();
+const MYHOST = process.env.MYHOST || 'http://localhost:3000';
 
 
 const client = new Client({
@@ -71,42 +72,59 @@ client.on('message',async (msg) => {
   console.log("WHATSAPP WEB => Message received");
   console.log(msg.id.remote);
   let seeder = msg.id.remote.split('@')[1];
+
   if (seeder == 'c.us') {
+    let chat = await msg.getChat();
+    let oldMessages = await chat.fetchMessages({ limit: 5 });
+    let dataOld = [];
+    for (let i = 0; i < oldMessages.length; i++) {
+      console.log(oldMessages[i]);
+      if (oldMessages[i]._data.type == 'chat') {
+        dataOld.push({
+          from: oldMessages[i]._data.from,
+          body: oldMessages[i]._data.body,
+          to: oldMessages[i]._data.to
+        });
+      }
+    }
     let noHp = phoneNumberNormalizer(msg.from);
     console.log("WHATSAPP WEB => Number: " + noHp);
     // let kirim = await seedmsg(noHp, msg.body);
     // console.log(kirim);
     try {
-      axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: noHp, message: msg.body })
+      console.log("PRIVATE RECEIVED => : " + noHp);
+      let processPesan = await axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: noHp, message: msg.body, oldMessages: dataOld, replay: MYHOST })
+      console.log(processPesan);
     } catch (error) {
 
     }
 
   }
-  const chat = await msg.getChat();
-  // Ambil 20 pesan terakhir sebelum pesan ini
-  const messages = await chat.fetchMessages({ limit: 3 });
 
-  messages.forEach(m => {
-    console.log({
-      from: m.from,
-      body: m.body,
-      timestamp: m.timestamp
-    });
-  });
   if (seeder == 'lid') {
-    let on = await client.sendPresenceAvailable();
-    await chat.sendStateTyping();
-    console.log("PRIVATE RECEIVED");
-    console.log(chat);
+    let chat = await msg.getChat();
+    let oldMessages = await chat.fetchMessages({ limit: 3 });
+    let dataOld = [];
+    for (let i = 0; i < oldMessages.length; i++) {
+      console.log(oldMessages[i]);
+      if (oldMessages[i]._data.type == 'chat') {
+        dataOld.push({
+          from: oldMessages[i]._data.from,
+          body: oldMessages[i]._data.body,
+          to: oldMessages[i]._data.to
+        });
+      }
+    }
+    console.log("PRIVATE RECEIVED => : " + msg.from);
+    console.log(msg.from);
 
     try {
-      axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body })
+      let processPesan = await axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
+      console.log(processPesan);
     } catch (error) {
 
     }
   }
-  console.log(msg);
 
 });
 
@@ -121,7 +139,6 @@ const findGroupByName = async function (groupName) {
 
 async function seedmsg(number, message) {
   let on = await client.sendPresenceAvailable();
-   console.log("ON " +on);
   console.log("WHATSAPP WEB => Number: " + number);
   if (number.includes("@")) {
     await client.sendMessage(number, message);
@@ -256,7 +273,6 @@ async function logout() {
   // await client.logout();
   console.log("OFF " + off);
   let state = await client.getState();
-  console.log(state);
   client.initialize();
   return { status: true, message: "Logout successfully" };
 }
