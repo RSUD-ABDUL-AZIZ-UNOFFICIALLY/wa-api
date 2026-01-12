@@ -23,8 +23,8 @@ const client = new Client({
         "--disable-accelerated-2d-canvas",
         "--no-first-run",
         "--no-zygote",
-        "--single-process", // <- this one doesn't works in Windows
-        "--disable-gpu",
+        // "--single-process", // <- this one doesn't works in Windows
+        // "--disable-gpu",
       ],
   },
 });
@@ -51,6 +51,7 @@ client.on("auth_failure", (msg) => {
 client.on("ready", async () => {
   console.log("WHATSAPP WEB => Ready");
   let online = await client.sendPresenceAvailable();
+  console.log('WID:', client.info.wid);
   console.log("ONLINE ");
 });
 
@@ -72,7 +73,6 @@ client.on('message',async (msg) => {
   console.log("WHATSAPP WEB => Message received");
   console.log(msg.id.remote);
   let seeder = msg.id.remote.split('@')[1];
-
   if (seeder == 'c.us') {
     let chat = await msg.getChat();
     let oldMessages = await chat.fetchMessages({ limit: 5 });
@@ -138,6 +138,9 @@ const findGroupByName = async function (groupName) {
 
 
 async function seedmsg(number, message) {
+  if (!client.info || !client.info.wid) {
+    return res.status(503).json({ error: 'Client belum ready' });
+  }
   let on = await client.sendPresenceAvailable();
   console.log("WHATSAPP WEB => Number: " + number);
   if (number.includes("@")) {
@@ -171,6 +174,9 @@ async function seedmsg(number, message) {
 }
 
 async function sendGrubMsg(name, message) {
+  if (!client.info || !client.info.wid) {
+    return res.status(503).json({ error: 'Client belum ready' });
+  }
   await client.sendPresenceAvailable();
   console.log("WHATSAPP WEB => Group name: " + name);
   const group = await findGroupByName(name);
@@ -242,6 +248,9 @@ async function getPic(telp){
 
 async function cekCotak(nomor) {
   try {
+    if (!client.info || !client.info.wid) {
+      return res.status(503).json({ error: 'Client belum ready' });
+    }
     await client.sendPresenceAvailable();
     if (nomor.includes('@')) {
       let isRegistered = await client.getChatById(nomor);
