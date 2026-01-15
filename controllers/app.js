@@ -53,6 +53,9 @@ client.on("ready", async () => {
   let online = await client.sendPresenceAvailable();
   console.log('WID:', client.info.wid);
   console.log("ONLINE ");
+  client.pupPage.evaluate(() => {
+    window.WWebJS.sendSeen = () => true;
+  });
 });
 
 client.on("disconnected", (reason) => {
@@ -155,17 +158,13 @@ async function seedmsg(number, message) {
   console.log("WHATSAPP WEB => Message: " + message);
   if (isRegistered) {
     console.log("WHATSAPP WEB => User registered");
-    let chat = await client.getChatById(noHp);
-    // await chat.sendSeen();
-    await chat.sendStateTyping();
-    await new Promise(resolve => setTimeout(resolve, 2000));
     try {
       await client.sendMessage(noHp, message);
     } catch (error) {
       return { status: false, message: "Messrage failed to send", error: error };
     }
-  let off = await client.sendPresenceUnavailable();
-  console.log("OFF " + off);
+    // let off = await client.sendPresenceUnavailable();
+    // console.log("OFF " + off);
     return { status: true, message: "Message sent successfully"};
   } else {
     console.log("WHATSAPP WEB => User not registered");
