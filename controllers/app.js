@@ -38,8 +38,8 @@ client.on("qr", (qr) => {
   });
 });
 
-client.on("authenticated", async (session) => {
-  console.log("AUTHENTICATED", session);
+client.on("authenticated", async () => {
+  console.log("AUTHENTICATED");
   console.log("WHATSAPP WEB => Authenticated");
 });
 
@@ -141,37 +141,37 @@ const findGroupByName = async function (groupName) {
 
 
 async function seedmsg(number, message) {
-   try {
-  if (!client.info || !client.info.wid) {
-    return res.status(503).json({ error: 'Client belum ready' });
-  }
-  let on = await client.sendPresenceAvailable();
-  console.log("WHATSAPP WEB => Number: " + number);
-  if (number.includes("@")) {
-    await client.sendSeen(number);
-    await client.sendMessage(number, message);
-    return { status: true, message: "Message sent successfully by LID" };
-  }
-  let noHp = phoneNumberFormatter(number);
-  console.log("WHATSAPP WEB => Number: " + noHp);
-  const isRegistered = await client.isRegisteredUser(noHp);
-  console.log("WHATSAPP WEB => isRegistered: " + isRegistered);
-  console.log("WHATSAPP WEB => Message: " + message);
-  if (isRegistered) {
-    console.log("WHATSAPP WEB => User registered");
-    try {
-      await client.sendSeen(noHp);
-      await client.sendMessage(noHp, message);
-    } catch (error) {
-      return { status: false, message: "Messrage failed to send", error: error };
+  try {
+    if (!client.info || !client.info.wid) {
+      return res.status(503).json({ error: 'Client belum ready' });
     }
+    //  await client.sendPresenceAvailable();
+    console.log("WHATSAPP WEB => Number: " + number);
+    if (number.includes("@")) {
+      await client.sendSeen(number);
+      await client.sendMessage(number, message);
+      return { status: true, message: "Message sent successfully by LID" };
+    }
+    let noHp = phoneNumberFormatter(number);
+    console.log("WHATSAPP WEB => Number: " + noHp);
+    const isRegistered = await client.isRegisteredUser(noHp);
+    console.log("WHATSAPP WEB => isRegistered: " + isRegistered);
+    console.log("WHATSAPP WEB => Message: " + message);
+    if (isRegistered) {
+      console.log("WHATSAPP WEB => User registered");
+      try {
+        await client.sendSeen(noHp);
+        await client.sendMessage(noHp, message);
+      } catch (error) {
+        return { status: false, message: "Messrage failed to send", error: error };
+      }
     // let off = await client.sendPresenceUnavailable();
     // console.log("OFF " + off);
-    return { status: true, message: "Message sent successfully"};
-  } else {
-    console.log("WHATSAPP WEB => User not registered");
-    return { status: false, message: "User not registered"};
-  }
+      return { status: true, message: "Message sent successfully" };
+    } else {
+      console.log("WHATSAPP WEB => User not registered");
+      return { status: false, message: "User not registered" };
+    }
   } catch (error) {
       return { status: false, message: "Messrage error to send", error: error };
     }
