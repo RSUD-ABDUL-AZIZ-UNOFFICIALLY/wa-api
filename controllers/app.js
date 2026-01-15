@@ -138,6 +138,7 @@ const findGroupByName = async function (groupName) {
 
 
 async function seedmsg(number, message) {
+   try {
   if (!client.info || !client.info.wid) {
     return res.status(503).json({ error: 'Client belum ready' });
   }
@@ -155,13 +156,13 @@ async function seedmsg(number, message) {
   if (isRegistered) {
     console.log("WHATSAPP WEB => User registered");
     let chat = await client.getChatById(noHp);
-    chat.sendSeen();
+    await chat.sendSeen();
     await chat.sendStateTyping();
     await new Promise(resolve => setTimeout(resolve, 2000));
     try {
       await client.sendMessage(noHp, message);
     } catch (error) {
-      // return { status: false, message: "Messrage failed to send", error: error };
+      return { status: false, message: "Messrage failed to send", error: error };
     }
   let off = await client.sendPresenceUnavailable();
   console.log("OFF " + off);
@@ -170,6 +171,9 @@ async function seedmsg(number, message) {
     console.log("WHATSAPP WEB => User not registered");
     return { status: false, message: "User not registered"};
   }
+  } catch (error) {
+      return { status: false, message: "Messrage error to send", error: error };
+    }
   
 }
 
