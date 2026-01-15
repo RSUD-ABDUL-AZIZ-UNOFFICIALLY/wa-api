@@ -148,8 +148,9 @@ async function seedmsg(number, message) {
   let on = await client.sendPresenceAvailable();
   console.log("WHATSAPP WEB => Number: " + number);
   if (number.includes("@")) {
+    await client.sendSeen(number);
     await client.sendMessage(number, message);
-    return
+    return { status: true, message: "Message sent successfully by LID" };
   }
   let noHp = phoneNumberFormatter(number);
   console.log("WHATSAPP WEB => Number: " + noHp);
@@ -159,6 +160,7 @@ async function seedmsg(number, message) {
   if (isRegistered) {
     console.log("WHATSAPP WEB => User registered");
     try {
+      await client.sendSeen(noHp);
       await client.sendMessage(noHp, message);
     } catch (error) {
       return { status: false, message: "Messrage failed to send", error: error };
