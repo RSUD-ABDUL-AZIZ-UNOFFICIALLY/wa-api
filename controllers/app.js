@@ -145,7 +145,7 @@ async function seedmsg(number, message) {
     if (!client.info || !client.info.wid) {
       return res.status(503).json({ error: 'Client belum ready' });
     }
-    //  await client.sendPresenceAvailable();
+    await client.sendPresenceAvailable();
     console.log("WHATSAPP WEB => Number: " + number);
     if (number.includes("@")) {
       await client.sendSeen(number);
