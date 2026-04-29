@@ -46,6 +46,7 @@ client.on("authenticated", async () => {
 client.on("auth_failure", (msg) => {
   // Fired if session restore was unsuccessful
   console.error("AUTHENTICATION FAILURE", msg);
+  client.initialize();
 });
 
 client.on("ready", async () => {
@@ -53,6 +54,7 @@ client.on("ready", async () => {
   let online = await client.sendPresenceAvailable();
   console.log('WID:', client.info.wid);
   console.log("ONLINE ");
+  await client.sendPresenceUnavailable();
   client.pupPage.evaluate(() => {
     window.WWebJS.sendSeen = () => true;
   });
@@ -105,19 +107,27 @@ client.on('message',async (msg) => {
   }
 
   if (seeder == 'lid') {
-    let chat = await msg.getChat();
-    let oldMessages = await chat.fetchMessages({ limit: 3 });
     let dataOld = [];
-    for (let i = 0; i < oldMessages.length; i++) {
-      console.log(oldMessages[i]);
-      if (oldMessages[i]._data.type == 'chat') {
-        dataOld.push({
-          from: oldMessages[i]._data.from,
-          body: oldMessages[i]._data.body,
-          to: oldMessages[i]._data.to
-        });
+    try {
+      let chat = await msg.getChat();
+      console.log(chat);
+      let oldMessages = await chat.fetchMessages({ limit: 3 });
+      for (let i = 0; i < oldMessages.length; i++) {
+        // console.log(oldMessages[i]);
+        if (oldMessages[i]._data.type == 'chat') {
+          dataOld.push({
+            from: oldMessages[i]._data.from,
+            body: oldMessages[i]._data.body,
+            to: oldMessages[i]._data.to
+          });
+        }
       }
+
+    } catch (error) {
+      console.error(error);
     }
+    console.log(dataOld);
+
     console.log("PRIVATE RECEIVED => : " + msg.from);
     console.log(msg.from);
 
@@ -125,6 +135,8 @@ client.on('message',async (msg) => {
       let processPesan = await axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
       console.log(processPesan);
     } catch (error) {
+      console.error('error post NLP');
+      console.error(error);
 
     }
   }
@@ -148,8 +160,15 @@ async function seedmsg(number, message) {
     await client.sendPresenceAvailable();
     console.log("WHATSAPP WEB => Number: " + number);
     if (number.includes("@")) {
-      await client.sendSeen(number);
-      await client.sendMessage(number, message);
+
+      // await client.sendSeen(number);
+      let chat = await client.getChatById(number);
+      await chat.sendStateTyping();
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      let logChat = await chat.fetchMessages({ limit: 3, fromMe: false });
+      console.log(logChat[0].id);
+      await client.sendMessage(number, message, [{ MessageSendOptions: true }]);
+      await client.sendPresenceUnavailable();
       return { status: true, message: "Message sent successfully by LID" };
     }
     let noHp = phoneNumberFormatter(number);
@@ -160,15 +179,21 @@ async function seedmsg(number, message) {
     if (isRegistered) {
       console.log("WHATSAPP WEB => User registered");
       try {
-        await client.sendSeen(noHp);
+        // await client.sendSeen(noHp);
+        let chat = await client.getChatById(noHp);
+        await chat.sendSeen();
+        await chat.sendStateTyping();
+        await new Promise(resolve => setTimeout(resolve, 2500));
         await client.sendMessage(noHp, message);
       } catch (error) {
         return { status: false, message: "Messrage failed to send", error: error };
       }
     // let off = await client.sendPresenceUnavailable();
     // console.log("OFF " + off);
+      await client.sendPresenceUnavailable();
       return { status: true, message: "Message sent successfully" };
     } else {
+      await client.sendPresenceUnavailable();
       console.log("WHATSAPP WEB => User not registered");
       return { status: false, message: "User not registered" };
     }
@@ -192,8 +217,10 @@ async function sendGrubMsg(name, message) {
     } catch (error) {
       return { status: false, message: "Message failed to send", error: error};
     }
+    await client.sendPresenceUnavailable();
     return { status: true, message: "Message sent successfully"};
   } else {
+    await client.sendPresenceUnavailable();
     console.log("WHATSAPP WEB => Group not found");
     return { status: false, message: "Group not found"};
   }
