@@ -163,10 +163,9 @@ async function seedmsg(number, message) {
 
       // await client.sendSeen(number);
       let chat = await client.getChatById(number);
+      await chat.sendSeen();
       await chat.sendStateTyping();
       await new Promise(resolve => setTimeout(resolve, 2500));
-      let logChat = await chat.fetchMessages({ limit: 3, fromMe: false });
-      console.log(logChat[0].id);
       await client.sendMessage(number, message, [{ MessageSendOptions: true }]);
       await client.sendPresenceUnavailable();
       return { status: true, message: "Message sent successfully by LID" };
