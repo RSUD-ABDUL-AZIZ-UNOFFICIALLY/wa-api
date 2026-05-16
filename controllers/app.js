@@ -197,6 +197,7 @@ async function seedmsg(number, message) {
       return { status: false, message: "User not registered" };
     }
   } catch (error) {
+    client.initialize();
       return { status: false, message: "Messrage error to send", error: error };
     }
   
