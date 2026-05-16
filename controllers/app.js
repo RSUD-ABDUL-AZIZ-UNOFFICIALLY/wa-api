@@ -71,10 +71,7 @@ client.on("change_state", (state) => {
   console.log("CHANGE STATE", state);
 });
 
-client.on('message',async (msg) => {
-  // if (msg.body == '!ping') {
-  //     msg.reply('pong');
-  // }
+client.on('message', async (msg) => {
   console.log("WHATSAPP WEB => Message received");
   console.log(msg.id.remote);
   let seeder = msg.id.remote.split('@')[1];
@@ -101,8 +98,10 @@ client.on('message',async (msg) => {
       let processPesan = await axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: noHp, message: msg.body, oldMessages: dataOld, replay: MYHOST })
       console.log(processPesan);
     } catch (error) {
+      console.error(error);
 
     }
+    return
 
   }
 
@@ -126,19 +125,20 @@ client.on('message',async (msg) => {
     } catch (error) {
       console.error(error);
     }
-    console.log(dataOld);
-
-    console.log("PRIVATE RECEIVED => : " + msg.from);
-    console.log(msg.from);
 
     try {
+      console.log("PRIVATE RECEIVED => : " + msg.from);
+      console.log(msg.from);
+      if (msg.body == "") {
+        return
+      }
       let processPesan = await axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
       console.log(processPesan);
     } catch (error) {
       console.error('error post NLP');
       console.error(error);
-
     }
+    return
   }
 
 });
