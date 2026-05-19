@@ -317,13 +317,63 @@ async function logout() {
   client.initialize();
   return { status: true, message: "Logout successfully" };
 }
+
+async function getlistChat() {
+  try {
+    if (!client.info || !client.info.wid) {
+      return { status: false, message: "Client belum ready" };
+    }
+
+    const chats = await client.getChats();
+    const readChats = [];
+    const unreadChats = [];
+
+    for (let chat of chats) {
+      const chatData = {
+        id: chat.id._serialized,
+        name: chat.name,
+        isGroup: chat.isGroup,
+        unreadCount: chat.unreadCount,
+        lastMessage: chat.lastMessage ? {
+          body: chat.lastMessage.body,
+          timestamp: chat.lastMessage.timestamp
+        } : null,
+        pinned: chat.pinned,
+        archived: chat.archived
+      };
+
+      if (chat.unreadCount > 0) {
+        unreadChats.push(chatData);
+      } else {
+        readChats.push(chatData);
+      }
+    }
+
+    return {
+      status: true,
+      message: "Chat list retrieved successfully",
+      data: {
+        read: readChats,
+        unread: unreadChats,
+        totalChats: chats.length,
+        totalRead: readChats.length,
+        totalUnread: unreadChats.length
+      }
+    };
+  } catch (error) {
+    console.error("Error getting chat list:", error);
+    return { status: false, message: "Failed to get chat list", error: error.message };
+  }
+}
+
 module.exports = {
   seedmsg,
   sendGrubMsg,
   sendMedia,
   getPic,
   cekCotak,
-  logout
+  logout,
+  getlistChat
 };
 
 

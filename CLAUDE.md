@@ -20,3 +20,8 @@ The project is a Node.js Express API for WhatsApp integration using `whatsapp-we
 
 ### Request Flow
 `Client Request` → `index.js` (Express App) → `routes/index.js` (Router) → `middlewares/index.js` (Custom Middlewares) → `controllers/wa.js` (Business Logic) → `whatsapp-web.js` (WhatsApp Client)
+
+
+### References
+- [whatsapp-web.js](https://github.com/wwebjs/whatsapp-web.js)
+- [Documentation for whatsapp-web.js](https://docs.wwebjs.dev/)
