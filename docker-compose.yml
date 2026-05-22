@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  wa-api:
+    build: .
+    container_name: wa-api-server
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-3000}
+      # Add other environment variables from .env as needed
+    env_file:
+      - .env
+    volumes:
+      # For persistent WhatsApp session storage
+      - wa-session-data:/app/.wwebjs_auth
+      # For logs (optional)
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - wa-network
+    # Uncomment if you want to keep container running for debugging
+    # stdin_open: true
+    # tty: true
+
+volumes:
+  wa-session-data:
+    driver: local
+
+networks:
+  wa-network:
+    driver: bridge
