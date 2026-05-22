@@ -1,4 +1,4 @@
-const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout, getlistChat, setUnread } = require("./app.js");
+const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout, getlistChat, setUnread, getRiwayatChat } = require("./app.js");
 
 module.exports = {
   send: async (req, res, next) => {
@@ -92,8 +92,21 @@ module.exports = {
   },
   setUnread: async (req, res, next) => {
     try {
-      const { telp } = req.body;
-      let kirim = await setUnread(telp);
+      const { id_chat } = req.body;
+      let kirim = await setUnread(id_chat);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  getChat: async (req, res, next) => {
+    try {
+      const { id_chat, limit = 5 } = req.body;
+      let kirim = await getRiwayatChat(id_chat, limit);
       console.log(kirim);
       if (kirim.status == true) {
         return res.status(200).json(kirim);

@@ -30,6 +30,7 @@ const client = new Client({
 });
 
 client.initialize();
+// client.resetState();
 console.log("Connection to Whatsapp Web Client");
 
 client.on("qr", (qr) => {
@@ -63,8 +64,8 @@ client.on("ready", async () => {
 client.on("disconnected", (reason) => {
   console.log("Session file deleted!");
   console.log("Client was logged out", reason);
-  // client.initialize();
-  client.resetState();
+  client.initialize();
+  // client.resetState();
 });
 
 client.on("change_state", (state) => {
@@ -198,7 +199,8 @@ async function seedmsg(number, message) {
     }
   } catch (error) {
     client.initialize();
-      return { status: false, message: "Messrage error to send", error: error };
+    // client.resetState();
+    return { status: false, message: "Messrage error to send", error: error.message };
     }
   
 }
@@ -362,6 +364,43 @@ async function getlistChat() {
     };
   } catch (error) {
     console.error("Error getting chat list:", error);
+    await client.resetState();
+    return { status: false, message: "Failed to get chat list", error: error.message };
+  }
+}
+async function setUnread(id_chat) {
+  try {
+    if (!client.info || !client.info.wid) {
+      return { status: false, message: "Client belum ready" };
+    }
+
+    const chat = await client.getChatById(id_chat);
+    if (!chat) {
+      return { status: false, message: "Chat not found" };
+    }
+
+    await chat.markUnread();
+    return { status: true, message: "Chat marked as unread successfully" };
+  } catch (error) {
+    return { status: false, message: "Failed to mark chat as unread", error: error.message };
+  }
+}
+
+async function getRiwayatChat(id_chat, limit) {
+  try {
+    if (!client.info || !client.info.wid) {
+      return { status: false, message: "Client belum ready" };
+    }
+
+    const chat = await client.getChatById(id_chat);
+    if (!chat) {
+      return { status: false, message: "Chat not found" };
+    }
+    let oldMessages = await chat.fetchMessages({ limit: limit });
+    return { status: true, message: "Chat list retrieved successfully", data: { oldMessages } };
+  } catch (error) {
+    console.error("Error getting chat list:", error);
+    await client.resetState();
     return { status: false, message: "Failed to get chat list", error: error.message };
   }
 }
@@ -373,7 +412,9 @@ module.exports = {
   getPic,
   cekCotak,
   logout,
-  getlistChat
+  getlistChat,
+  setUnread,
+  getRiwayatChat
 };
 
 
