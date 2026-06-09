@@ -1,4 +1,4 @@
-const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout, getlistChat, setUnread, getRiwayatChat } = require("./app.js");
+const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout, getlistChat, setUnread, getRiwayatChat, getImageChatsBase64, findContactName } = require("./app.js");
 
 module.exports = {
   send: async (req, res, next) => {
@@ -107,6 +107,32 @@ module.exports = {
     try {
       const { id_chat, limit = 5 } = req.body;
       let kirim = await getRiwayatChat(id_chat, limit);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  getImageChat: async (req, res, next) => {
+    try {
+      const { id_chat, limit = 10 } = req.body;
+      let kirim = await getImageChatsBase64(id_chat, limit);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  getContactName: async (req, res, next) => {
+    try {
+      const { telp } = req.body;
+      let kirim = await findContactName(telp);
       console.log(kirim);
       if (kirim.status == true) {
         return res.status(200).json(kirim);

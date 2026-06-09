@@ -397,11 +397,126 @@ async function getRiwayatChat(id_chat, limit) {
       return { status: false, message: "Chat not found" };
     }
     let oldMessages = await chat.fetchMessages({ limit: limit });
+    for (let i = 0; i < oldMessages.length; i++) {
+      const msg = oldMessages[i];
+      if (msg.hasMedia && msg.type === 'image') {
+        try {
+          const media = await msg.downloadMedia();
+          oldMessages[i].filename = media.filename || `image_${msg.timestamp}`;
+          oldMessages[i].media = media;
+
+        } catch (error) {
+          console.error('Error downloading media:', error);
+        }
+      }
+    }
     return { status: true, message: "Chat list retrieved successfully", data: { oldMessages } };
   } catch (error) {
     console.error("Error getting chat list:", error);
     await client.resetState();
     return { status: false, message: "Failed to get chat list", error: error.message };
+  }
+}
+
+async function getImageChatsBase64(id_chat, limit) {
+  try {
+    if (!client.info || !client.info.wid) {
+      return { status: false, message: "Client belum ready" };
+    }
+
+    const chat = await client.getChatById(id_chat);
+    if (!chat) {
+      return { status: false, message: "Chat not found" };
+    }
+
+    let oldMessages = await chat.fetchMessages({ limit: limit });
+    let imageMessages = [];
+
+    for (let i = 0; i < oldMessages.length; i++) {
+      const msg = oldMessages[i];
+      // Check if message has media and is of type image
+      if (msg.hasMedia && msg.type === 'image') {
+        try {
+          const media = await msg.downloadMedia();
+          if (media) {
+            imageMessages.push({
+              from: msg.from,
+              to: msg.to,
+              timestamp: msg.timestamp,
+              type: msg.type,
+              mimetype: media.mimetype,
+              base64: media.data,
+              filename: media.filename || `image_${msg.timestamp}`,
+              size: media.data.length
+            });
+          }
+        } catch (mediaError) {
+          console.error("Error downloading media:", mediaError);
+          imageMessages.push({
+            from: msg.from,
+            to: msg.to,
+            timestamp: msg.timestamp,
+            type: msg.type,
+            error: "Failed to download media",
+            filename: `image_${msg.timestamp}`
+          });
+        }
+      }
+    }
+
+    return {
+      status: true,
+      message: "Image messages retrieved successfully",
+      data: {
+        totalMessages: oldMessages.length,
+        totalImages: imageMessages.length,
+        images: imageMessages
+      }
+    };
+  } catch (error) {
+    console.error("Error getting image chats:", error);
+    return { status: false, message: "Failed to get image chats", error: error.message };
+  }
+}
+
+async function findContactName(telp) {
+  try {
+    if (!client.info || !client.info.wid) {
+      return { status: false, message: "Client belum ready" };
+    }
+
+    let formattedNumber = telp;
+
+    // If the phone number doesn't include @, format it
+    if (!telp.includes("@")) {
+      formattedNumber = phoneNumberFormatter(telp);
+    }
+
+    // Try to get the contact
+    const contact = await client.getContactById(formattedNumber);
+    const profilePic = await client.getProfilePicUrl(formattedNumber);
+
+    if (contact) {
+      return {
+        status: true,
+        message: "Contact found",
+        data: {
+          number: formattedNumber,
+          name: contact.name || contact.pushname || "Unknown",
+          pushname: contact.pushname,
+          shortName: contact.shortName,
+          isBusiness: contact.isBusiness,
+          isMyContact: contact.isMyContact,
+          profilePicUrl: profilePic,
+          contact: contact
+        }
+      };
+    } else {
+      return { status: false, message: "Contact not found" };
+    }
+  } catch (error) {
+    console.error("Error finding contact:", error);
+    return { status: false, message: "Failed to find contact", error: error.message };
   }
 }
 
@@ -414,7 +529,9 @@ module.exports = {
   logout,
   getlistChat,
   setUnread,
-  getRiwayatChat
+  getRiwayatChat,
+  getImageChatsBase64,
+  findContactName
 };
 
 
