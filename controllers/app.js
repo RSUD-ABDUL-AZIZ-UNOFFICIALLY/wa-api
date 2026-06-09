@@ -409,6 +409,15 @@ async function getRiwayatChat(id_chat, limit) {
           console.error('Error downloading media:', error);
         }
       }
+      if (msg.hasMedia && msg.type === 'document') {
+        try {
+          const media = await msg.downloadMedia();
+          oldMessages[i].filename = media.filename || `document_${msg.timestamp}`;
+          oldMessages[i].media = media;
+        } catch (error) {
+          console.error('Error downloading media:', error);
+        }
+      }
     }
     return { status: true, message: "Chat list retrieved successfully", data: { oldMessages } };
   } catch (error) {
