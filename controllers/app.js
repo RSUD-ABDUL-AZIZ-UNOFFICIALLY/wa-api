@@ -133,7 +133,7 @@ client.on('message', async (msg) => {
       if (msg.body == "") {
         return
       }
-      let processPesan = await axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
+      let processPesan = await axios.post(process.env.BOOTHOST + '/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
       console.log(processPesan);
     } catch (error) {
       console.error('error post NLP');
