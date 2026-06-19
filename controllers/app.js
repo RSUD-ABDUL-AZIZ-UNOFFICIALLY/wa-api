@@ -96,7 +96,7 @@ client.on('message', async (msg) => {
     // console.log(kirim);
     try {
       console.log("PRIVATE RECEIVED => : " + noHp);
-      let processPesan = await axios.post(process.env.BOOTHOST + '/api/nlp/message', { nowa: noHp, message: msg.body, oldMessages: dataOld, replay: MYHOST })
+      let processPesan = await axios.post(process.env.BOOTHOST + '/message', { nowa: noHp, message: msg.body, oldMessages: dataOld, replay: MYHOST })
       console.log(processPesan);
     } catch (error) {
       console.error(error);
