@@ -111,6 +111,7 @@ client.on('message', async (msg) => {
     try {
       let chat = await msg.getChat();
       console.log(chat);
+      chat.sendStateTyping();
       let oldMessages = await chat.fetchMessages({ limit: 3 });
       for (let i = 0; i < oldMessages.length; i++) {
         // console.log(oldMessages[i]);
@@ -163,10 +164,16 @@ async function seedmsg(number, message) {
     if (number.includes("@")) {
 
       // await client.sendSeen(number);
-      let chat = await client.getChatById(number);
-      await chat.sendSeen();
-      await chat.sendStateTyping();
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      let chat = null;
+      try {
+        chat = await client.getChatById(number);
+        await chat.sendSeen();
+        await chat.sendStateTyping();
+        await new Promise(resolve => setTimeout(resolve, 2500));
+      } catch (error) {
+        console.warn(`[Bypass] Failed to fetch chat to set typing state (r:r). Skipping... ${error}`);
+      }
+
       await client.sendMessage(number, message, [{ MessageSendOptions: true }]);
       await client.sendPresenceUnavailable();
       return { status: true, message: "Message sent successfully by LID" };
@@ -178,17 +185,18 @@ async function seedmsg(number, message) {
     console.log("WHATSAPP WEB => Message: " + message);
     if (isRegistered) {
       console.log("WHATSAPP WEB => User registered");
+      let chat = null;
       try {
         // await client.sendSeen(noHp);
-        let chat = await client.getChatById(noHp);
+        chat = await client.getChatById(noHp);
         await chat.sendSeen();
         await chat.sendStateTyping();
         await new Promise(resolve => setTimeout(resolve, 2500));
-        await client.sendMessage(noHp, message);
       } catch (error) {
-        return { status: false, message: "Messrage failed to send", error: error };
+        console.warn(`[Bypass] Failed to fetch chat to set typing state (r:r). Skipping... ${error}`);
       }
-    // let off = await client.sendPresenceUnavailable();
+      await client.sendMessage(noHp, message);
+      // let off = await client.sendPresenceUnavailable();
     // console.log("OFF " + off);
       await client.sendPresenceUnavailable();
       return { status: true, message: "Message sent successfully" };
