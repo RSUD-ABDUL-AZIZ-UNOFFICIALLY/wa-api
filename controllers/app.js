@@ -108,10 +108,11 @@ client.on('message', async (msg) => {
 
   if (seeder == 'lid') {
     let dataOld = [];
+    let chat = null;
     try {
-      let chat = await msg.getChat();
+      chat = await msg.getChat();
       console.log(chat);
-      chat.sendStateTyping();
+      chat.sendStateTyping()
       let oldMessages = await chat.fetchMessages({ limit: 3 });
       for (let i = 0; i < oldMessages.length; i++) {
         // console.log(oldMessages[i]);
@@ -130,10 +131,10 @@ client.on('message', async (msg) => {
 
     try {
       console.log("PRIVATE RECEIVED => : " + msg.from);
-      console.log(msg.from);
-      if (msg.body == "") {
-        return
-      }
+      console.log(msg.from + " => " + msg.body);
+      // if (msg.body == "") {
+      //   return
+      // }
       let processPesan = await axios.post(process.env.BOOTHOST + '/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
       console.log(processPesan);
     } catch (error) {
@@ -302,12 +303,19 @@ async function cekCotak(nomor) {
     } else {
       let noHp = phoneNumberFormatter(nomor);
       const isRegistered = await client.isRegisteredUser(noHp);
+      console.log("isRegistered" + isRegistered);
       if (!isRegistered) {
         return { id: { _serialized: noHp, isRegistered: false } }
       }
-      let data = await client.getChatById(noHp);
-      data.id.isRegistered = true
-      return data
+      try {
+        let data = await client.getChatById(noHp);
+        console.log(data);
+        data.id.isRegistered = true
+        return data
+      } catch (error) {
+        console.log(error);
+      }
+      return { id: { _serialized: noHp, isRegistered: true } }
     }
   } catch (error) {
     console.log(error);
