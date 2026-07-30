@@ -4,9 +4,9 @@ services:
     container_name: wa-api-server
     #ports:
     #  - "${PORT:-3000}:3000"
-    environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - PORT=${PORT:-3000}
+    # environment:
+    #   - NODE_ENV=${NODE_ENV:-production}
+    #   - PORT=${PORT:-3000}
       # Add other environment variables from .env as needed
     env_file:
       - .env
@@ -18,7 +18,8 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
     networks:
-      - wa-network
+      - wa-network:
+        ipv4_address: 172.23.0.2
     # Uncomment if you want to keep container running for debugging
     # stdin_open: true
     # tty: true
@@ -30,3 +31,7 @@ volumes:
 networks:
   wa-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.23.0.0/24
+          gateway: 172.23.0.1

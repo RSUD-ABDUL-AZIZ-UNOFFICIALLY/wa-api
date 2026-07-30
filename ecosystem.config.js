@@ -24,7 +24,7 @@ module.exports = {
       ignore_watch: ['node_modules', 'logs', '.wwebjs_auth'],
       
       // Process management
-      max_memory_restart: '1G',
+      max_memory_restart: '100M',
       max_restarts: 10,
       min_uptime: '10s',
       autorestart: true,
