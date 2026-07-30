@@ -325,6 +325,7 @@ async function cekCotak(nomor) {
 
 
 }
+
 async function logout() {
   let on = await client.sendPresenceAvailable();
   console.log("ON " + on);
@@ -544,6 +545,18 @@ async function findContactName(telp) {
     return { status: false, message: "Failed to find contact", error: error.message };
   }
 }
+async function healthcek() {
+  try {
+    if (!client.info || !client.info.wid) {
+      return { status: false, message: "Client belum ready" };
+    }
+    return { status: true, message: "Client is ready" };
+  } catch (error) {
+    console.error("Error checking client health:", error);
+    return { status: false, message: "Failed to check client health", error: error.message };
+  }
+
+}
 
 module.exports = {
   seedmsg,
@@ -556,7 +569,8 @@ module.exports = {
   setUnread,
   getRiwayatChat,
   getImageChatsBase64,
-  findContactName
+  findContactName,
+  healthcek
 };
 
 

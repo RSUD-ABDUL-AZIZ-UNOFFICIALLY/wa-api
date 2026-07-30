@@ -1,4 +1,4 @@
-const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout, getlistChat, setUnread, getRiwayatChat, getImageChatsBase64, findContactName } = require("./app.js");
+const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout, getlistChat, setUnread, getRiwayatChat, getImageChatsBase64, findContactName, healthcek } = require("./app.js");
 
 module.exports = {
   send: async (req, res, next) => {
@@ -133,6 +133,18 @@ module.exports = {
     try {
       const { telp } = req.body;
       let kirim = await findContactName(telp);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  gethealthcek: async (req, res, next) => {
+    try {
+      let kirim = await healthcek();
       console.log(kirim);
       if (kirim.status == true) {
         return res.status(200).json(kirim);
