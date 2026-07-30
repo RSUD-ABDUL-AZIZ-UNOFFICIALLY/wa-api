@@ -4,9 +4,9 @@ services:
     container_name: wa-api-server
     #ports:
     #  - "${PORT:-3000}:3000"
-    # environment:
-    #   - NODE_ENV=${NODE_ENV:-production}
-    #   - PORT=${PORT:-3000}
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-3000}
       # Add other environment variables from .env as needed
     env_file:
       - .env

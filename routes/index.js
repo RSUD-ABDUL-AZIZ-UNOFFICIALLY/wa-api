@@ -16,5 +16,6 @@ routes.post('/wa/setUnread', middleware.check, wa.setUnread);
 routes.get('/wa/getChat', middleware.check, base.getChat);
 routes.post('/wa/getImageChat', middleware.check, wa.getImageChat);
 routes.post('/wa/contacname', middleware.check, wa.getContactName);
+routes.get('/health', (req, res) => res.status(200).json({ status: true, message: "OK" }));
 
 module.exports = routes;
