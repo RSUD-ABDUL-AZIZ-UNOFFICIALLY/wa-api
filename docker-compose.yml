@@ -18,8 +18,9 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
     networks:
-      - wa-network:
+      wa-network:
         ipv4_address: 172.23.0.2
+
     # Uncomment if you want to keep container running for debugging
     # stdin_open: true
     # tty: true
@@ -33,5 +34,5 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.23.0.0/24
+        - subnet: 172.23.0.0/16
           gateway: 172.23.0.1
