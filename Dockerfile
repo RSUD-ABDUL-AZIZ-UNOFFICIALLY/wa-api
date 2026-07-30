@@ -29,9 +29,10 @@ COPY . .
 EXPOSE 3000
 
 # Health check
- HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-     CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 404) throw new Error(r.statusCode)})"
-
+HEALTHCHECK --interval=120s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => { \
+        if (r.statusCode === 400 || r.statusCode === 404) process.exit(1); \
+    })"   
 # Start app with PM2
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]
 
