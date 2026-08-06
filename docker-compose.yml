@@ -1,0 +1,39 @@
+services:
+  wa-api:
+    build: .
+    container_name: wa-api-server
+    #ports:
+    #  - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-3000}
+      - MYHOST=http://172.23.0.2:3000
+      # Add other environment variables from .env as needed
+    env_file:
+      - .env
+    volumes:
+      # For persistent WhatsApp session storage
+      - ./.wwebjs_auth:/app/.wwebjs_auth
+      - ./.wwebjs_cache:/app/.wwebjs_cache
+      # For logs (optional)
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      wa-network:
+        ipv4_address: 172.23.0.2
+
+    # Uncomment if you want to keep container running for debugging
+    # stdin_open: true
+    # tty: true
+
+volumes:
+  wa-session-data:
+    driver: local
+
+networks:
+  wa-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.23.0.0/16
+          gateway: 172.23.0.1
