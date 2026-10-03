@@ -74,7 +74,7 @@ client.on("change_state", (state) => {
 
 client.on('message', async (msg) => {
   console.log("WHATSAPP WEB => Message received");
-  console.log(JSON.stringify(msg, null, 2);
+  console.log(JSON.stringify(msg, null, 2));
   let seeder = msg.id.remote.split('@')[1];
   if (seeder == 'c.us') {
     let chat = await msg.getChat();
