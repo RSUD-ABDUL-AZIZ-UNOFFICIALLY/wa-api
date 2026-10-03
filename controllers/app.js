@@ -76,13 +76,25 @@ client.on('message', async (msg) => {
   console.log("WHATSAPP WEB => Message received");
   console.log(JSON.stringify(msg, null, 2));
   let seeder = msg.id.remote.split('@')[1];
-  if (seeder == 'c.us') {
-    let chat = await msg.getChat();
-    let oldMessages = await chat.fetchMessages({ limit: 5 });
-    let dataOld = [];
+  if (seeder !== 'c.us' && seeder !== 'lid') return;
+  let noHp = seeder === 'c.us' ? phoneNumberNormalizer(msg.from) : msg.from;
+  let dataOld = [];
+  let chat = null;
+  try {
+    chat = await msg.getChat();
+
+    // Jika seeder adalah lid, jalankan indikator typing
+    if (seeder === 'lid') {
+      console.log(chat);
+      await chat.sendStateTyping();
+    }
+
+    // Tentukan limit pesan berdasarkan jenis seeder (c.us: 5, lid: 3)
+    let limit = seeder === 'c.us' ? 5 : 3;
+    let oldMessages = await chat.fetchMessages({ limit });
+
     for (let i = 0; i < oldMessages.length; i++) {
-      // console.log(oldMessages[i]);
-      if (oldMessages[i]._data.type == 'chat') {
+      if (oldMessages[i]._data.type === 'chat') {
         dataOld.push({
           from: oldMessages[i]._data.from,
           body: oldMessages[i]._data.body,
@@ -90,59 +102,116 @@ client.on('message', async (msg) => {
         });
       }
     }
-    let noHp = phoneNumberNormalizer(msg.from);
-    console.log("WHATSAPP WEB => Number: " + noHp);
-    // let kirim = await seedmsg(noHp, msg.body);
-    // console.log(kirim);
-    try {
-      console.log("PRIVATE RECEIVED => : " + noHp);
-      let processPesan = await axios.post(process.env.BOOTHOST + '/message', { nowa: noHp, message: msg.body, oldMessages: dataOld, replay: MYHOST })
-      console.log(processPesan);
-    } catch (error) {
-      console.error(error);
-
-    }
-    return
-
+  } catch (error) {
+    console.error("Error saat mengambil chat atau pesan lama:", error);
   }
 
-  if (seeder == 'lid') {
-    let dataOld = [];
-    let chat = null;
-    try {
-      chat = await msg.getChat();
-      console.log(chat);
-      chat.sendStateTyping()
-      let oldMessages = await chat.fetchMessages({ limit: 3 });
-      for (let i = 0; i < oldMessages.length; i++) {
-        // console.log(oldMessages[i]);
-        if (oldMessages[i]._data.type == 'chat') {
-          dataOld.push({
-            from: oldMessages[i]._data.from,
-            body: oldMessages[i]._data.body,
-            to: oldMessages[i]._data.to
-          });
-        }
-      }
-
-    } catch (error) {
-      console.error(error);
-    }
-
-    try {
-      console.log("PRIVATE RECEIVED => : " + msg.from);
+  // Eksekusi pengiriman data ke backend (API NLP)
+  try {
+    console.log(`PRIVATE RECEIVED (${seeder.toUpperCase()}) => : ` + noHp);
+    if (seeder === 'lid') {
       console.log(msg.from + " => " + msg.body);
-      // if (msg.body == "") {
-      //   return
-      // }
-      let processPesan = await axios.post(process.env.BOOTHOST + '/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
-      console.log(processPesan);
-    } catch (error) {
-      console.error('error post NLP');
-      console.error(error);
     }
-    return
+    let quotedMsg = null;
+    if (msg.hasQuotedMsg) {
+      try {
+        // Mengambil objek pesan yang di-quote/reply
+        let quotedMsg = await msg.getQuotedMessage();
+
+        console.log("Pesan ini adalah balasan untuk:");
+        console.log("- Pengirim asli:", quotedMsg.from);
+        console.log("- Isi pesan asli:", quotedMsg.body);
+        console.log("- ID pesan asli:", quotedMsg.id._serialized);
+        quotedMsg = {
+          from: quotedMsg.from,
+          body: quotedMsg.body,
+          to: quotedMsg.to,
+          type: quotedMsg.type,
+          id: quotedMsg.id._serialized
+        }
+      } catch (error) {
+        console.error("Gagal mengambil pesan yang dikutip:", error);
+      }
+    }
+
+    axios.post(process.env.BOOTHOST + '/message', {
+      nowa: noHp,
+      message: msg.body,
+      oldMessages: dataOld,
+      quotedMsg: quotedMsg,
+      replay: MYHOST
+    }).then((response) => {
+      console.log(response.data);
+    }).catch((error) => {
+      console.error(error);
+    });
+
+  } catch (error) {
+    console.error('Error post NLP:', error);
   }
+
+  // if (seeder == 'c.us') {
+  //   let chat = await msg.getChat();
+  //   let oldMessages = await chat.fetchMessages({ limit: 5 });
+  //   let dataOld = [];
+  //   for (let i = 0; i < oldMessages.length; i++) {
+  //     // console.log(oldMessages[i]);
+  //     if (oldMessages[i]._data.type == 'chat') {
+  //       dataOld.push({
+  //         from: oldMessages[i]._data.from,
+  //         body: oldMessages[i]._data.body,
+  //         to: oldMessages[i]._data.to
+  //       });
+  //     }
+  //   }
+  //   let noHp = phoneNumberNormalizer(msg.from);
+  //   console.log("WHATSAPP WEB => Number: " + noHp);
+  //   try {
+  //     console.log("PRIVATE RECEIVED => : " + noHp);
+  //     let processPesan = await axios.post(process.env.BOOTHOST + '/message', { nowa: noHp, message: msg.body, oldMessages: dataOld, replay: MYHOST })
+  //     console.log(processPesan);
+  //   } catch (error) {
+  //     console.error(error);
+
+  //   }
+  //   return
+
+  // }
+
+  // if (seeder == 'lid') {
+  //   let dataOld = [];
+  //   let chat = null;
+  //   try {
+  //     chat = await msg.getChat();
+  //     console.log(chat);
+  //     chat.sendStateTyping()
+  //     let oldMessages = await chat.fetchMessages({ limit: 3 });
+  //     for (let i = 0; i < oldMessages.length; i++) {
+  //       // console.log(oldMessages[i]);
+  //       if (oldMessages[i]._data.type == 'chat') {
+  //         dataOld.push({
+  //           from: oldMessages[i]._data.from,
+  //           body: oldMessages[i]._data.body,
+  //           to: oldMessages[i]._data.to
+  //         });
+  //       }
+  //     }
+
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+
+  //   try {
+  //     console.log("PRIVATE RECEIVED => : " + msg.from);
+  //     console.log(msg.from + " => " + msg.body);
+  //     let processPesan = await axios.post(process.env.BOOTHOST + '/message', { nowa: msg.from, message: msg.body, oldMessages: dataOld, replay: MYHOST })
+  //     console.log(processPesan);
+  //   } catch (error) {
+  //     console.error('error post NLP');
+  //     console.error(error);
+  //   }
+  //   return
+  // }
 
 });
 
