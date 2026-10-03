@@ -1,39 +1,38 @@
 FROM node:24-slim
 
-# Install system dependencies for puppeteer/chromium (whatsapp-web.js requirement)
-RUN apt-get update && apt-get install -y \
+# Install system dependencies untuk Puppeteer/Chromium (whatsapp-web.js)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gconf-service libgbm-dev libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
     libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 \
     libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 \
     libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 \
-    libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release \
+    libxss1 libxtst6 ca-certificates fonts-liberation libnss3 lsb-release \
     xdg-utils wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PM2 globally
+# Install PM2 secara global
 RUN npm install -g pm2
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Salin package.json dan package-lock.json
 COPY package*.json ./
 
-# Install dependencies
+# Install dependensi produksi
 RUN npm install --production
 
-# Copy application code
+# Salin seluruh kode aplikasi
 COPY . .
-    
-# Expose port
+
+# Ekspose port aplikasi
 EXPOSE 3000
 
-# Health check
+# Health check yang lebih aman (menganggap sukses jika status code 2xx)
 HEALTHCHECK --interval=120s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => { \
-        if (r.statusCode === 400 || r.statusCode === 404) process.exit(1); \
-    })"   
-# Start app with PM2
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { \
+        process.exit(res.statusCode === 200 ? 0 : 1); \
+    }).on('error', () => process.exit(1));"
 
-#CMD ["node", "index.js"]
+# Jalankan aplikasi menggunakan PM2
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]
