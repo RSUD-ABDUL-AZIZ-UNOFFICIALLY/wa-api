@@ -1,7 +1,8 @@
 FROM node:24-slim
 
-# Install system dependencies untuk Puppeteer/Chromium (whatsapp-web.js)
+# Install system dependencies termasuk git untuk package dari repository git
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
     gconf-service libgbm-dev libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
     libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 \
     libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 \
@@ -19,8 +20,8 @@ WORKDIR /app
 # Salin package.json dan package-lock.json
 COPY package*.json ./
 
-# Install dependensi produksi
-RUN npm install --production
+# Install dependensi produksi (menggunakan --omit=dev sesuai saran npm terbaru)
+RUN npm install --omit=dev
 
 # Salin seluruh kode aplikasi
 COPY . .
@@ -28,7 +29,7 @@ COPY . .
 # Ekspose port aplikasi
 EXPOSE 3000
 
-# Health check yang lebih aman (menganggap sukses jika status code 2xx)
+# Health check
 HEALTHCHECK --interval=120s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { \
         process.exit(res.statusCode === 200 ? 0 : 1); \
