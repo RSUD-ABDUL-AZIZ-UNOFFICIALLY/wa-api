@@ -1,4 +1,4 @@
-FROM node:18-bullseye
+FROM node:24-slim
 
 # Install system dependencies for puppeteer/chromium (whatsapp-web.js requirement)
 RUN apt-get update && apt-get install -y \

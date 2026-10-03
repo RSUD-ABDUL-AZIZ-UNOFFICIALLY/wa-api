@@ -2,12 +2,12 @@ services:
   wa-api:
     build: .
     container_name: wa-api-server
-    #ports:
+    # ports:
     #  - "${PORT:-3000}:3000"
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - PORT=${PORT:-3000}
-      - MYHOST=http://172.23.0.2:3000
+      # - NODE_ENV=${NODE_ENV:-production}
+      # - PORT=${PORT:-3000}
+      # - MYHOST=http://172.23.0.2:3000
       # Add other environment variables from .env as needed
     env_file:
       - .env

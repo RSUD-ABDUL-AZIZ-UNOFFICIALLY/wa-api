@@ -74,14 +74,14 @@ client.on("change_state", (state) => {
 
 client.on('message', async (msg) => {
   console.log("WHATSAPP WEB => Message received");
-  console.log(msg.id.remote);
+  console.log(JSON.stringify(msg, null, 2);
   let seeder = msg.id.remote.split('@')[1];
   if (seeder == 'c.us') {
     let chat = await msg.getChat();
     let oldMessages = await chat.fetchMessages({ limit: 5 });
     let dataOld = [];
     for (let i = 0; i < oldMessages.length; i++) {
-      console.log(oldMessages[i]);
+      // console.log(oldMessages[i]);
       if (oldMessages[i]._data.type == 'chat') {
         dataOld.push({
           from: oldMessages[i]._data.from,
