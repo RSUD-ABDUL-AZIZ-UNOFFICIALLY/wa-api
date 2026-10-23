@@ -1,4 +1,4 @@
-const { seedmsg, sendGrubMsg, sendMedia, getPic } = require("./app.js");
+const { seedmsg, sendGrubMsg, sendMedia, getPic, cekCotak, logout, getlistChat, setUnread, getRiwayatChat, getImageChatsBase64, findContactName, healthcek } = require("./app.js");
 
 module.exports = {
   send: async (req, res, next) => {
@@ -6,10 +6,7 @@ module.exports = {
       const { telp, message } = req.body;
       let kirim = await seedmsg(telp, message);
       console.log(kirim);
-      if (kirim.status == true) {
-        return res.status(200).json(kirim);
-      }
-      return res.status(400).json(kirim);
+      return res.status(200).json(kirim);
     } catch (error) {
       return next(error);
     }
@@ -54,6 +51,100 @@ module.exports = {
     try {
       const { pdfUrl, to, stt, fileName } = req.body;
       let kirim = await sendMedia(pdfUrl, to, stt, fileName);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  cekCotak: async (req, res, next) => {
+    let { telp } = req.body;
+    let kirim = await cekCotak(telp);
+    console.log(kirim);
+    return res.status(200).json(kirim);
+  },
+  logout: async (req, res, next) => {
+    try {
+      let kirim = await logout();
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  getlistChat: async (req, res, next) => {
+    try {
+      let kirim = await getlistChat();
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  setUnread: async (req, res, next) => {
+    try {
+      const { id_chat } = req.body;
+      let kirim = await setUnread(id_chat);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  getChat: async (req, res, next) => {
+    try {
+      const { id_chat, limit = 5 } = req.body;
+      let kirim = await getRiwayatChat(id_chat, limit);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  getImageChat: async (req, res, next) => {
+    try {
+      const { id_chat, limit = 10 } = req.body;
+      let kirim = await getImageChatsBase64(id_chat, limit);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  getContactName: async (req, res, next) => {
+    try {
+      const { telp } = req.body;
+      let kirim = await findContactName(telp);
+      console.log(kirim);
+      if (kirim.status == true) {
+        return res.status(200).json(kirim);
+      }
+      return res.status(400).json(kirim);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  gethealthcek: async (req, res, next) => {
+    try {
+      let kirim = await healthcek();
       console.log(kirim);
       if (kirim.status == true) {
         return res.status(200).json(kirim);

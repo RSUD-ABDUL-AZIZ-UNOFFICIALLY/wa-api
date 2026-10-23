@@ -14,8 +14,18 @@ const phoneNumberFormatter = function (number) {
 
   return formatted;
 }
+const phoneNumberNormalizer = function (number) {
+  let nomor = number.split('@')[0];
+
+  // Ganti awalan '62' dengan '0'
+  if (nomor.startsWith('62')) {
+    nomor = '0' + nomor.slice(2);
+    return nomor;
+  }
+}
 
 
 module.exports = {
-  phoneNumberFormatter
+  phoneNumberFormatter,
+  phoneNumberNormalizer
 }
